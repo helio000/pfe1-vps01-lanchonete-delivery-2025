@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <title>Sistema de Pedidos</title>
+  <link rel="stylesheet" href="icone.png">
+  <link rel="stylesheet" href="check.png">
+  
+  <style>
+    :root {
+      --cor1: #333333;
+      --cor2: #FFCC00;
+      --cor3: #FF0000;
+      --cor4: #CCCCCC;
+      --cor5: #F5F5F5;
+      --transp1: rgba(0, 0, 0, 0.8);
+      --transp2: rgba(255, 255, 255, 0.8);
+    }
+
+    body {
+      font-family: sans-serif;
+      background-color: var(--cor5);
+      margin: 0;
+      padding: 20px;
+      color: #FFFFFF; 
+    }
+
+    h1, h2 {
+      color: var(--cor2);
+      margin-top: 40px;
+    }
+
+    form, .container {
+      background: #000000;
+      padding: 15px;
+      border-radius: 10px;
+      margin-bottom: 30px;
+      box-shadow: 0 0 10px var(--cor4);
+    }
+
+    input, select {
+      display: block;
+      margin: 10px 0;
+      padding: 8px;
+      width: 100%;
+      border: 1px solid var(--cor4);
+      border-radius: 8px;
+      color: #FFFFFF; 
+      background-color: #333333; 
+    }
+
+    button {
+      padding: 8px 16px;
+      background-color: var(--cor3);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    .card {
+      background: var(--cor1);
+      padding: 15px;
+      border-radius: 10px;
+      margin: 10px 0;
+      box-shadow: 0 0 6px var(--cor4);
+    }
+
+    .card button {
+      margin-top: 10px;
+    }
+
+    .flex {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+
+    @media(min-width: 768px) {
+      .flex {
+        flex-direction: row;
+        justify-content: space-between;
+      }
+
+      .column {
+        width: 48%;
+      }
+    }
+
+    .transp1 {
+      background-color: var(--transp1);
+    }
+
+    .transp2 {
+      background-color: var(--transp2);
+    }
+
+    .image-finalizar-check {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      background-image: url('check.png');
+      background-size: contain;
+      background-repeat: no-repeat;
+      margin-right: 5px;
+    }
+
+    .image-finalizar-icone {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      background-image: url('icone.png');
+      background-size: contain;
+      background-repeat: no-repeat;
+      margin-right: 5px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Cadastro de Pedido</h1>
+  <form id="formPedido">
+    <input type="text" id="nomeCliente" placeholder="Nome do Cliente" required>
+    <input type="text" id="cpfCliente" placeholder="CPF do Cliente" required>
+    <select id="produto" required>
+      <option value="">Selecione um produto</option>
+    </select>
+    <button type="submit">Cadastrar Pedido</button>
+  </form>
+
+  <div class="flex">
+    <div class="container column">
+      <h2><i class="fas fa-cogs"></i> Pedidos em Execução</h2> 
+      <div id="execucao"></div>
+    </div>
+    <div class="container column">
+      <h2><i class="fas fa-truck"></i> Pedidos em Entrega</h2> 
+      <div id="entrega"></div>
+    </div>
+  </div>
+
+  <script>
+    const form = document.getElementById('formPedido')
+    const execucao = document.getElementById('execucao')
+    const entrega = document.getElementById('entrega')
+    const produtoSelect = document.getElementById('produto')
+
+    let pedidos = JSON.parse(localStorage.getItem('pedidos')) || []
+    let cardapio = [
+      {
+        "id": 1,
+        "nome":"Hamburguer",
+        "ingredientes": [
+          "Pão", "Carne", "Queijo", "Alface", "Tomate"
+        ],
+        "preco": 15.00
+      },
+      {
+        "id": 2,
+        "nome":"X-Burguer",
+        "ingredientes": [
+          "Pão", "Carne", "Queijo", "Bacon", "Alface", "Tomate"
+        ],
+        "preco": 18.00
+      },
+      {
+        "id": 3,
+        "nome":"X-Salada",
+        "ingredientes": [
+          "Pão", "Carne", "Queijo", "Alface", "Tomate", "Cebola"
+        ],
+        "preco": 20.00
+      },
+      {
+        "id": 4,
+        "nome":"X-Bacon",
+        "ingredientes": [
+          "Pão", "Carne", "Queijo", "Bacon", "Alface", "Tomate"
+        ],
+        "preco": 25.00
+      },
+      {
+        "id": 5,
+        "nome":"X-Egg",
+        "ingredientes": [
+          "Pão", "Carne", "Queijo", "Bacon", "Alface", "Tomate", "Ovo"
+        ],
+        "preco": 30.00
+      },
+      {
+        "id": 6,
+        "nome":"X-Tudo",
+        "ingredientes": [
+          "Pão", "Carne", "Queijo", "Bacon", "Alface", "Tomate", "Ovo", "Cebola"
+        ],
+        "preco": 35.00
+      }
+    ]
+
+    function gerarId() {
+      return Date.now()
+    }
+
+    function salvarLocal() {
+      localStorage.setItem('pedidos', JSON.stringify(pedidos))
+    }
+
+    function renderizarCardapio() {
+      produtoSelect.innerHTML = '<option value="">Selecione um produto</option>'
+      cardapio.forEach(item => {
+        const option = document.createElement('option')
+        option.value = item.id
+        option.textContent = `${item.nome} - R$ ${item.preco.toFixed(2)}`
+        produtoSelect.appendChild(option)
+      })
+    }
+
+    function renderizar() {
+      execucao.innerHTML = ''
+      entrega.innerHTML = ''
+
+      pedidos.forEach(p => {
+        const card = document.createElement('div')
+        card.className = 'card'
+        card.innerHTML = `
+          <h3>${p.produto}</h3>
+          <p>Cliente: ${p.nomeCliente}</p>
+          <p>CPF: ${p.cpfCliente}</p>
+          <p>Data: ${p.data}</p>
+          <p>Status: ${p.status}</p>
+        `
+
+        if (p.status === 'execucao') {
+          const btn = document.createElement('button')
+          btn.innerHTML = '<span class="image-finalizar-check"></span> Enviar para Entrega'  // Ícone de check.png
+          btn.onclick = () => {
+            p.status = 'entrega'
+            salvarLocal()
+            renderizar()
+          }
+          card.appendChild(btn)
+          execucao.appendChild(card)
+        }
+
+        if (p.status === 'entrega') {
+          const btn = document.createElement('button')
+          btn.innerHTML = '<span class="image-finalizar-icone"></span> Finalizar Pedido'  // Ícone de icone.png
+          btn.onclick = () => {
+            const finalizados = JSON.parse(localStorage.getItem('finalizados')) || []
+            finalizados.push(p)
+            localStorage.setItem('finalizados', JSON.stringify(finalizados))
+            pedidos = pedidos.filter(x => x.id !== p.id)
+            salvarLocal()
+            renderizar()
+          }
+          card.appendChild(btn)
+          entrega.appendChild(card)
+        }
+      })
+    }
+
+    form.addEventListener('submit', e => {
+      e.preventDefault()
+      const produtoSelecionado = cardapio.find(item => item.id == form.produto.value)
+      const pedido = {
+        id: gerarId(),
+        nomeCliente: form.nomeCliente.value,
+        cpfCliente: form.cpfCliente.value,
+        produto: produtoSelecionado.nome,
+        ingredientes: produtoSelecionado.ingredientes.join(', '),
+        preco: produtoSelecionado.preco,
+        data: new Date().toLocaleString(),
+        status: 'execucao'
+      }
+      pedidos.push(pedido)
+      salvarLocal()
+      form.reset()
+      renderizar()
+    })
+
+    renderizarCardapio()
+    renderizar()
+  </script>
+</body>
+</html>

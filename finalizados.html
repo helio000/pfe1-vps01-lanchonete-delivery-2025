@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Pedidos Finalizados</title>
+  <style>
+    body {
+      font-family: Courier, monospace;
+      margin: 0;
+      padding: 20px;
+      background-color: #99DDFF;
+      color: #003366;
+    }
+
+    h1 {
+      text-align: center;
+      color: #003366;
+    }
+
+    .tabelaContainer {
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background-color: #FFFFFF;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+
+    th, td {
+      padding: 12px;
+      text-align: left;
+      border-bottom: 1px solid #ccc;
+    }
+
+    th {
+      background-color: #006699;
+      color: white;
+    }
+
+    @media (max-width: 600px) {
+      table, thead, tbody, th, td, tr {
+        display: block;
+      }
+
+      th {
+        position: absolute;
+        left: -9999px;
+        top: -9999px;
+      }
+
+      td {
+        position: relative;
+        padding-left: 50%;
+        white-space: pre-line;
+        border: none;
+        border-bottom: 1px solid #ccc;
+      }
+
+      td::before {
+        position: absolute;
+        top: 12px;
+        left: 12px;
+        width: 45%;
+        padding-right: 10px;
+        font-weight: bold;
+        white-space: nowrap;
+      }
+
+      td:nth-of-type(1)::before { content: "Produto"; }
+      td:nth-of-type(2)::before { content: "Cliente"; }
+      td:nth-of-type(3)::before { content: "CPF"; }
+      td:nth-of-type(4)::before { content: "Data"; }
+      td:nth-of-type(5)::before { content: "Status"; }
+    }
+  </style>
+</head>
+<body>
+  <h1>Pedidos Finalizados</h1>
+  <div class="tabelaContainer">
+    <table id="tabelaPedidos"></table>
+  </div>
+
+  <script>
+    function renderPedidosFinalizados() {
+      const pedidos = JSON.parse(localStorage.getItem('pedidosFinalizados')) || [];
+      const tabela = document.getElementById('tabelaPedidos');
+      tabela.innerHTML = `
+        <thead>
+          <tr>
+            <th>Produto</th>
+            <th>Cliente</th>
+            <th>CPF</th>
+            <th>Data</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${pedidos.map(pedido => `
+            <tr>
+              <td>${pedido.produto}</td>
+              <td>${pedido.nomeCliente}</td>
+              <td>${pedido.cpfCliente}</td>
+              <td>${pedido.data}</td>
+              <td>Finalizado</td>
+            </tr>
+          `).join('')}
+        </tbody>
+      `;
+    }
+
+    document.addEventListener('DOMContentLoaded', renderPedidosFinalizados);
+  </script>
+</body>
+</html>
